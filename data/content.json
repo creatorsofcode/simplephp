@@ -1,0 +1,122 @@
+{
+    "site": {
+        "title": "SimplePHP",
+        "description": "Modern web solutions",
+        "phone": "+1 234 567 8900",
+        "email": "info@simplephp.org"
+    },
+    "menu": [
+        {
+            "id": "home",
+            "label": "Homepage",
+            "type": "page",
+            "order": 1
+        },
+        {
+            "id": "services",
+            "label": "Services",
+            "type": "page",
+            "order": 2
+        },
+        {
+            "id": "about",
+            "label": "About",
+            "type": "page",
+            "order": 3
+        },
+        {
+            "id": "contact",
+            "label": "Contact",
+            "type": "page",
+            "order": 4
+        }
+    ],
+    "pages": {
+        "home": {
+            "title": "Homepage",
+            "hero_title": "Welcome to Our Modern Website",
+            "hero_text": "We provide professional web solutions and services. From design to implementation — efficiently and on schedule.",
+            "cta_button": "Get Started",
+            "features_title": "Why Choose Us?",
+            "features": [
+                {
+                    "title": "Fast Response",
+                    "text": "We respond quickly to inquiries and start work on schedule."
+                },
+                {
+                    "title": "Clear Implementation",
+                    "text": "Clear communication and professional implementation throughout the project."
+                },
+                {
+                    "title": "Quality First",
+                    "text": "Quality is always our priority in all our projects."
+                }
+            ]
+        },
+        "services": {
+            "title": "Services",
+            "intro": "We offer a wide range of professional services.",
+            "services": [
+                {
+                    "title": "Web Development",
+                    "text": "Professional web development for all types of projects."
+                },
+                {
+                    "title": "Web Design",
+                    "text": "Modern and responsive web design solutions."
+                },
+                {
+                    "title": "Consulting",
+                    "text": "Flexible consulting solutions for different needs."
+                },
+                {
+                    "title": "Planning",
+                    "text": "Comprehensive planning service for your project needs."
+                },
+                {
+                    "title": "Support",
+                    "text": "Fast and reliable support and maintenance."
+                },
+                {
+                    "title": "Maintenance",
+                    "text": "Regular maintenance and updates."
+                }
+            ]
+        },
+        "about": {
+            "title": "About",
+            "intro": "How we work with you",
+            "steps": [
+                {
+                    "title": "1. Contact Us",
+                    "text": "Send an inquiry or contact us by phone."
+                },
+                {
+                    "title": "2. Planning",
+                    "text": "We plan a solution for your project needs."
+                },
+                {
+                    "title": "3. Proposal",
+                    "text": "We send a clear and detailed proposal."
+                },
+                {
+                    "title": "4. Implementation",
+                    "text": "We implement the project on schedule and professionally."
+                }
+            ]
+        },
+        "contact": {
+            "title": "Contact",
+            "intro": "<p>Hello World<\/p>",
+            "content": "",
+            "phone": "+ 123 45678 00",
+            "email": "info@simplephp.org",
+            "address": "Tartu Esotnia",
+            "form_title": "Send message",
+            "form_name": "You name",
+            "form_email": "Email",
+            "form_message": "Message",
+            "form_submit": "Send meil"
+        }
+    }
+}
