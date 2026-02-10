@@ -11,7 +11,7 @@ SimplePHP is a small flat‑file CMS built for very simple brochure sites. All c
 - Web server (Apache via XAMPP is fine)
 - `sendmail`/SMTP configured if you want the contact form to actually send email
 
-Folder layout (inside your web root, e.g. `C:\xampp\htdocs\flatphp`):
+Folder layout (inside your web root, e.g. `C:\xampp\htdocs\simplephp`):
 
 - `index.php` – public site (frontend)
 - `admin/` – admin panel (no routing, pure PHP)
@@ -26,10 +26,10 @@ Folder layout (inside your web root, e.g. `C:\xampp\htdocs\flatphp`):
 ## 2. First run & default admin login
 
 1. Place this project under your web root, e.g.:
-   - `C:\xampp\htdocs\flatphp` (Windows / XAMPP)
+   - `C:\xampp\htdocs\simplephp` (Windows / XAMPP)
 2. Start Apache/PHP and open in browser:
-   - Frontend: `http://localhost/flatphp/`
-   - Admin: `http://localhost/flatphp/admin/login.php`
+   - Frontend: `http://localhost/simplephp/`
+   - Admin: `http://localhost/simplephp/admin/login.php`
 3. Default admin user:
    - **Username**: `admin`
    - **Password**: `admin123`
@@ -195,7 +195,7 @@ If mail sending fails (server not configured), frontend will show a generic erro
 Your GitHub account: **`creatorsofcode.com`**  
 Repository name: **`simplephp`**
 
-From the project root (`flatphp`), run these commands in a terminal **on your machine**:
+From the project root (`simplephp`), run these commands in a terminal **on your machine**:
 
 ```bash
 # 1. Initialize git repo (if not already)
