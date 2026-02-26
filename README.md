@@ -3,7 +3,7 @@ SimplePHP – Flat-File Mini CMS
 
 SimplePHP is a small flat‑file CMS built for very simple brochure sites. All content lives in a JSON file, there is a minimal admin panel, and a design editor where you can paste full HTML5/CSS/JS templates (e.g. from ChatGPT) without breaking the backend logic.
 
-- **Live demo**: [simplephp.howtomakefreewebsite.com](https://simplephp.howtomakefreewebsite.com/)
+- **Live site CMS**:(https://simplephp.org)
 
 ---
 
