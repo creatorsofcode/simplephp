@@ -1,7 +1,7 @@
 {
     "site": {
-        "title": "Hello",
-        "description": "TItle",
+        "title": "SimplePHPasaas",
+        "description": "Modern web solutions",
         "phone": "+1 234 567 8900",
         "email": "info@simplephp.org"
     },
@@ -14,7 +14,7 @@
         },
         {
             "id": "services",
-            "label": "Services",
+            "label": "Servicesasassa",
             "type": "page",
             "order": 2
         },
@@ -34,8 +34,8 @@
     "pages": {
         "home": {
             "title": "Homepage",
-            "hero_title": "Helloworld",
-            "hero_text": "Data",
+            "hero_title": "Welcome to Our Modern Website",
+            "hero_text": "We provide professional web solutions and services. From design to implementation — efficiently and on schedule.",
             "cta_button": "Get Started",
             "features_title": "Why Choose Us?",
             "features": [
@@ -84,7 +84,7 @@
             ]
         },
         "about": {
-            "title": "asasaasas",
+            "title": "About",
             "intro": "How we work with you",
             "steps": [
                 {
@@ -107,7 +107,7 @@
         },
         "contact": {
             "title": "Contact",
-            "intro": "<p>Data<\/p>",
+            "intro": "<p>Hello World<\/p>",
             "content": "",
             "phone": "+ 123 45678 00",
             "email": "info@simplephp.org",
@@ -118,11 +118,5 @@
             "form_message": "Message",
             "form_submit": "Send meil"
         }
-    },
-    "design": {
-        "search_enabled": true,
-        "template_html": "",
-        "custom_css": "",
-        "custom_js": ""
     }
 }

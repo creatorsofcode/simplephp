@@ -3,6 +3,8 @@ SimplePHP – Flat-File Mini CMS
 
 SimplePHP is a small flat‑file CMS built for very simple brochure sites. All content lives in a JSON file, there is a minimal admin panel, and a design editor where you can paste full HTML5/CSS/JS templates (e.g. from ChatGPT) without breaking the backend logic.
 
+- **Live demo**: [simplephp.howtomakefreewebsite.com](https://simplephp.howtomakefreewebsite.com/)
+
 ---
 
 ## 1. Requirements
@@ -84,7 +86,34 @@ All saves end up in `data/content.json` or `data/users.json`.
 
 ---
 
-## 5. Design editor (HTML / CSS / JavaScript)
+## 5. Inline Editing
+
+SimplePHP includes a powerful **inline editing system** that allows you to edit content directly on the frontend when logged in as admin.
+
+### Features
+- **Click to Edit**: Click any element to edit it in place (including all card elements)
+- **Rich Text Toolbar**: Format with bold, italic, headings
+- **Add New Sections**: Double-click containers to add content
+- **Persistent Edit Mode**: Stays active across page navigation
+- **Live Preview**: See changes immediately
+- **Auto-Save**: Changes saved to JSON with automatic backups
+- **Comprehensive Coverage**: Every text element on the site is editable (titles, cards, footer, etc.)
+
+### How to Use
+1. Login to admin panel
+2. Visit the frontend homepage
+3. Look for the purple **"Edit Mode"** button in bottom-right corner
+4. Click to open panel, then "Start Editing"
+5. Click any highlighted element to edit (edit mode stays on across pages)
+6. Use toolbar to format text
+7. Click "Save All Changes" when ready
+8. Click "Done Editing" to exit edit mode
+
+For detailed documentation, see [INLINE-EDITING.md](INLINE-EDITING.md).
+
+---
+
+## 6. Design editor (HTML / CSS / JavaScript)
 
 Go to **Admin → Design**.
 
@@ -101,7 +130,7 @@ There you have:
 - **Notes** (optional):
   - For your own documentation, not used by the system.
 
-### 5.1 Template placeholders
+### 6.1 Template placeholders
 
 When `Template HTML` is set, `index.php` replaces these placeholders:
 
@@ -161,7 +190,7 @@ This is the fastest way to “fix” the site if a custom template goes wrong.
 
 ---
 
-## 6. Contact form (AJAX)
+## 7. Contact form (AJAX)
 
 On the **Contact** page, the frontend renders a form (if `contact` page has `form_title` etc.).
 
@@ -181,7 +210,7 @@ If mail sending fails (server not configured), frontend will show a generic erro
 
 ---
 
-## 7. Security notes
+## 8. Security notes
 
 - Change the default `admin123` password immediately in production.
 - Protect `/admin` with additional HTTP auth if you put this on a public server.
@@ -190,7 +219,54 @@ If mail sending fails (server not configured), frontend will show a generic erro
 
 ---
 
-## 8. Putting the project on GitHub
+## 9. Module System
+
+SimplePHP includes a powerful module system that allows you to extend functionality without modifying core files.
+
+### Features
+
+- **Module Discovery**: Automatically scans the `/modules` directory for available modules
+- **Easy Installation**: Install modules with one click from the admin panel
+- **Configuration Panel**: Auto-generated configuration forms based on JSON schemas
+- **Hook System**: Modules can inject content at key points in the frontend
+- **5 Demo Modules Included**:
+  - Hello World - Display a customizable welcome banner
+  - SEO Manager - Manage meta tags and SEO settings
+  - Analytics Tracker - Integrate Google Analytics and tracking codes
+  - Backup Manager - Create and restore backups
+  - Theme Customizer - Customize colors and appearance
+
+### Module Structure
+
+Each module lives in `/modules/module-id/` and contains:
+- `module.json` - Module metadata (name, version, author, description)
+- `module.php` - Main module logic and hook implementations
+- `config.json` (optional) - Configuration schema for auto-generated forms
+- `install.php` (optional) - Installation logic
+- `uninstall.php` (optional) - Cleanup logic
+
+### Available Hooks
+
+Modules can register hooks to inject content:
+- `page_meta` - Meta tags in `<head>`
+- `page_head` - CSS/scripts before `</head>`
+- `page_body_start` - Content after `<body>`
+- `page_content` - Main content area
+- `page_body_end` - Scripts/tracking before `</body>`
+
+### Managing Modules
+
+1. Go to **Admin** → **Modules** (`/admin/modules.php`)
+2. **Install** a discovered module
+3. **Activate** to enable it
+4. **Configure** (⚙️) to customize settings
+5. **Deactivate** or **Uninstall** as needed
+
+For detailed documentation, see `MODULES.md`, `MODULE-CONFIG-SYSTEM.md`, and `FRONTEND-MODULES.md`.
+
+---
+
+## 10. Putting the project on GitHub
 
 Your GitHub account: **`creatorsofcode.com`**  
 Repository name: **`simplephp`**

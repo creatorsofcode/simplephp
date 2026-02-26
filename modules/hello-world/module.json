@@ -1,0 +1,9 @@
+{
+    "name": "Hello World Module",
+    "description": "A simple example module that demonstrates the basic module structure and functionality.",
+    "version": "1.0.0",
+    "author": "SimplePHP Team",
+    "requires": {
+        "php": ">=7.4"
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "installed": [
+        "hello-world",
+        "seo-manager",
+        "theme-customizer"
+    ],
+    "active": [
+        "seo-manager",
+        "hello-world",
+        "theme-customizer"
+    ],
+    "config": {
+        "hello-world": {
+            "greeting_message": "Simplephp.org CMS system",
+            "greeting_color": "#0f0f0f",
+            "show_timestamp": true,
+            "position": "hidden"
+        },
+        "seo-manager": {
+            "default_meta_description": "Welcome to our website",
+            "default_meta_keywords": "cms, php, website",
+            "og_site_name": "",
+            "og_image": "",
+            "twitter_handle": "@yoursite",
+            "enable_sitemap": true,
+            "robots_content": "index, follow"
+        },
+        "theme-customizer": {
+            "primary_color": "#464a58",
+            "secondary_color": "#764ba2",
+            "text_color": "#333333",
+            "background_color": "#ffffff",
+            "font_family": "poppins",
+            "font_size": "16",
+            "container_width": "1140",
+            "border_radius": "8",
+            "enable_shadows": false,
+            "enable_animations": false,
+            "header_style": "classic"
+        }
+    }
+}

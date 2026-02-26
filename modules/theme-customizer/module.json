@@ -1,0 +1,16 @@
+{
+    "name": "Theme Customizer",
+    "description": "Customize the visual appearance of your website with colors, fonts, and layout options. Perfect example of advanced module configuration.",
+    "version": "1.0.0",
+    "author": "SimplePHP Team",
+    "requires": {
+        "php": ">=7.4"
+    },
+    "features": [
+        "Custom color schemes",
+        "Font selection",
+        "Layout customization",
+        "Header/Footer styles",
+        "Live preview"
+    ]
+}

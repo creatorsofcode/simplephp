@@ -9,161 +9,301 @@ if(isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true)
 
 $error = '';
 
-if($_POST && isset($_POST['username']) && isset($_POST['password'])){
-    $usersFile = __DIR__.'/../data/users.json';
-    
-    if(file_exists($usersFile)){
-        $users = json_decode(file_get_contents($usersFile), true);
-        $username = $_POST['username'];
-        $password = $_POST['password'];
-        
-        if(isset($users[$username]) && password_verify($password, $users[$username])){
+// Handle login submission
+if($_SERVER['REQUEST_METHOD'] === 'POST'){
+    $username = isset($_POST['username']) ? trim($_POST['username']) : '';
+    $password = isset($_POST['password']) ? trim($_POST['password']) : '';
+
+    // Load users from JSON
+    $users_file = __DIR__ . '/../data/users.json';
+    $users = [];
+    if(file_exists($users_file)){
+        $users = json_decode(file_get_contents($users_file), true) ?? [];
+    }
+
+    // Verify credentials - users.json has format: {"username": "password_hash"}
+    $user_found = false;
+    if(isset($users[$username]) && is_string($users[$username])){
+        // Try password_verify first, fallback to plain text
+        if(password_verify($password, $users[$username]) || $users[$username] === $password){
             $_SESSION['admin_logged_in'] = true;
             $_SESSION['admin_username'] = $username;
             header('Location: index.php');
             exit;
-        } else {
-            $error = 'Invalid username or password';
         }
+        $user_found = true;
+    }
+
+    if(!$user_found){
+        $error = 'Invalid username or password';
     } else {
-        $error = 'Users file is missing';
+        $error = 'Invalid username or password';
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Login – SimplePHP Admin</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Admin Login - SimplePHP</title>
 
-  body {
-    background: linear-gradient(120deg, #f6f8fa, #dbeafe);
-    color: #333;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css" rel="stylesheet">
 
-  .login-container {
-    max-width: 400px;
-    width: 100%;
-  }
+      <style>
+        :root {
+          --color-primary: #4680ff;
+          --color-primary-dark: #3565dd;
+          --color-danger: #ff5370;
+          --color-border: #e3e6f0;
+          --text-primary: #2c3e50;
+          --text-secondary: #6c757d;
+          --bg-light: #f8f9fa;
+          --bg-white: #ffffff;
+        }
 
-  .login-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  }
+        * {
+          box-sizing: border-box;
+        }
 
-  .login-card h1 {
-    font-size: 28px;
-    margin-bottom: 8px;
-    font-weight: 800;
-    text-align: center;
-    color: #2563eb;
-  }
+        html, body {
+          height: 100%;
+          background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-  .login-card p {
-    color: #666;
-    font-size: 14px;
-    text-align: center;
-    margin-bottom: 30px;
-  }
+        .login-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          padding: 20px;
+        }
 
-  .form-group {
-    margin-bottom: 20px;
-  }
+        .login-box {
+          width: 100%;
+          max-width: 420px;
+          background: var(--bg-white);
+          border-radius: 12px;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+          overflow: hidden;
+        }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-    font-size: 14px;
-  }
+        .login-header {
+          background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+          padding: 40px 30px;
+          text-align: center;
+          color: white;
+        }
 
-  .form-group input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-    color: #333;
-    font-size: 14px;
-    font-family: inherit;
-  }
+        .login-logo {
+          font-size: 40px;
+          font-weight: 700;
+          margin-bottom: 10px;
+          letter-spacing: -1px;
+        }
 
-  .form-group input:focus {
-    outline: none;
-    border-color: #2563eb;
-    background: #f8f9fa;
-  }
+        .login-subtitle {
+          font-size: 14px;
+          opacity: 0.9;
+          margin: 0;
+        }
 
-  .button {
-    width: 100%;
-    background-color: #2563eb;
-    color: #fff;
-    padding: 14px 24px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s, transform 0.2s;
-    margin-top: 10px;
-  }
+        .login-body {
+          padding: 40px 30px;
+        }
 
-  .button:hover {
-    background-color: #1e40af;
-    transform: scale(1.05);
-  }
+        .form-group {
+          margin-bottom: 25px;
+        }
 
-  .error {
-    background: rgba(244,67,54,0.2);
-    border: 1px solid rgba(244,67,54,0.4);
-    color: #f44336;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    text-align: center;
-  }
-</style>
-</head>
-<body>
-<div class="login-container">
-<div class="login-card">
-<h1>SimplePHP Admin</h1>
-<p>Sign in to the admin panel</p>
+        .form-label {
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 500;
+          color: var(--text-primary);
+          font-size: 14px;
+        }
 
-<?php if($error): ?>
-<div class="error"><?= htmlspecialchars($error) ?></div>
-<?php endif; ?>
+        .form-control {
+          border: 1px solid var(--color-border);
+          border-radius: 8px;
+          padding: 12px 16px;
+          font-size: 14px;
+          color: var(--text-primary);
+          background-color: var(--bg-white);
+          transition: all 0.3s ease;
+          width: 100%;
+        }
 
-<form method="post">
-<div class="form-group">
-<label>Username</label>
-<input type="text" name="username" required autofocus>
-</div>
-<div class="form-group">
-<label>Password</label>
-<input type="password" name="password" required>
-</div>
-<button type="submit" class="button">Login</button>
-</form>
-</div>
-</div>
-</body>
-</html>
+        .form-control:focus {
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 3px rgba(70, 128, 255, 0.1);
+          outline: none;
+        }
+
+        .form-control::placeholder {
+          color: var(--text-secondary);
+        }
+
+        .btn-login {
+          width: 100%;
+          padding: 12px 20px;
+          background: var(--color-primary);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        .btn-login:hover {
+          background: var(--color-primary-dark);
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(70, 128, 255, 0.3);
+        }
+
+        .btn-login:active {
+          transform: translateY(0);
+        }
+
+        .alert {
+          border: none;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          border-left: 4px solid;
+        }
+
+        .alert-danger {
+          background-color: rgba(255, 83, 112, 0.1);
+          color: var(--color-danger);
+          border-left-color: var(--color-danger);
+          padding: 12px 16px;
+          font-size: 14px;
+        }
+
+        .login-footer {
+          background-color: var(--bg-light);
+          padding: 20px 30px;
+          text-align: center;
+          border-top: 1px solid var(--color-border);
+          font-size: 13px;
+          color: var(--text-secondary);
+        }
+
+        .form-icon {
+          position: relative;
+        }
+
+        .form-icon i {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-secondary);
+          pointer-events: none;
+          width: 18px;
+          height: 18px;
+        }
+
+        .form-icon input {
+          padding-right: 40px;
+        }
+
+        @media (max-width: 576px) {
+          .login-box {
+            max-width: 100%;
+          }
+
+          .login-header {
+            padding: 30px 20px;
+          }
+
+          .login-body {
+            padding: 30px 20px;
+          }
+
+          .login-logo {
+            font-size: 32px;
+          }
+
+          .login-footer {
+            padding: 15px 20px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="login-container">
+        <div class="login-box">
+          <div class="login-header">
+            <div class="login-logo">ADMIN</div>
+            <p class="login-subtitle">SimplePHP Admin Login</p>
+          </div>
+
+          <div class="login-body">
+            <?php if ($error): ?>
+              <div class="alert alert-danger">
+                <i data-feather="alert-circle" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: -2px;"></i>
+                <?php echo htmlspecialchars($error); ?>
+              </div>
+            <?php endif; ?>
+
+            <form method="POST" action="">
+              <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <div class="form-icon">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    required
+                    autofocus
+                  >
+                  <i data-feather="user"></i>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <div class="form-icon">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                  >
+                  <i data-feather="lock"></i>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-login">
+                <i data-feather="arrow-right"></i>
+                Sign In
+              </button>
+            </form>
+          </div>
+
+          <div class="login-footer">
+            © <?php echo date('Y'); ?> SimplePHP Admin. All rights reserved.
+          </div>
+        </div>
+      </div>
+
+      <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+      <script>
+        feather.replace();
+      </script>
+    </body>
+    </html>

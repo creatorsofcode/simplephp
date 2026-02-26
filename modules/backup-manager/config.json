@@ -1,0 +1,57 @@
+{
+    "description": "Configure automatic backup settings and backup retention policies.",
+    "fields": [
+        {
+            "name": "auto_backup",
+            "label": "Automatic Backups",
+            "type": "checkbox",
+            "checkbox_label": "Enable automatic backups when content is saved",
+            "help": "Creates a backup every time you save content in the admin panel.",
+            "default": false
+        },
+        {
+            "name": "backup_interval",
+            "label": "Backup Interval",
+            "type": "select",
+            "options": {
+                "manual": "Manual Only",
+                "daily": "Daily",
+                "weekly": "Weekly",
+                "monthly": "Monthly"
+            },
+            "help": "How often to create automatic backups (requires cron setup).",
+            "default": "daily"
+        },
+        {
+            "name": "max_backups",
+            "label": "Maximum Backups to Keep",
+            "type": "number",
+            "placeholder": "10",
+            "help": "Older backups will be automatically deleted. Set to 0 for unlimited.",
+            "default": "10"
+        },
+        {
+            "name": "backup_notification_email",
+            "label": "Notification Email",
+            "type": "email",
+            "placeholder": "admin@example.com",
+            "help": "Receive email notifications when backups are created (optional)."
+        },
+        {
+            "name": "include_images",
+            "label": "Include Images in Backup",
+            "type": "checkbox",
+            "checkbox_label": "Backup uploaded images and media files",
+            "help": "Warning: This can significantly increase backup size.",
+            "default": false
+        },
+        {
+            "name": "compression",
+            "label": "Compression",
+            "type": "checkbox",
+            "checkbox_label": "Compress backups to save disk space",
+            "help": "Uses ZIP compression for backup files.",
+            "default": false
+        }
+    ]
+}

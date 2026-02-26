@@ -1,0 +1,15 @@
+{
+    "name": "Analytics Tracker",
+    "description": "Integrated analytics tracking with support for Google Analytics, Facebook Pixel, and custom tracking scripts. Track visitor behavior and conversions easily.",
+    "version": "1.1.0",
+    "author": "SimplePHP Team",
+    "requires": {
+        "php": ">=7.4"
+    },
+    "features": [
+        "Google Analytics support",
+        "Facebook Pixel integration",
+        "Custom tracking codes",
+        "Visit counter"
+    ]
+}

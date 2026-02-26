@@ -1,0 +1,15 @@
+{
+    "name": "Backup Manager",
+    "description": "Automatically create backups of your content and restore them when needed. Includes scheduled backups and one-click restore functionality.",
+    "version": "1.0.0",
+    "author": "SimplePHP Team",
+    "requires": {
+        "php": ">=7.4"
+    },
+    "features": [
+        "Automatic content backups",
+        "One-click restore",
+        "Backup history",
+        "Download backups"
+    ]
+}

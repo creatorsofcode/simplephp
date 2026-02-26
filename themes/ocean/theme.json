@@ -1,0 +1,15 @@
+{
+    "name": "Ocean Theme",
+    "description": "Cool ocean-inspired colors with blues and teals",
+    "version": "1.0.0",
+    "author": "SimplePHP",
+    "thumbnail": "thumbnail.png",
+    "colors": {
+        "background": "#0F172A",
+        "text": "#E0F2FE",
+        "primary": "#0284C7",
+        "secondary": "#164E63",
+        "accent": "#06B6D4"
+    },
+    "active": false
+}

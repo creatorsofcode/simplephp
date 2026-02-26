@@ -1,20 +1,20 @@
 {
     "site": {
-        "title": "Hello",
-        "description": "TItle",
+        "title": "Hello World<div><br><\/div>",
+        "description": "uuus",
         "phone": "+1 234 567 8900",
         "email": "info@simplephp.org"
     },
     "menu": [
         {
             "id": "home",
-            "label": "Homepage",
+            "label": "Homepage2",
             "type": "page",
             "order": 1
         },
         {
             "id": "services",
-            "label": "Services",
+            "label": "Servicesasassa",
             "type": "page",
             "order": 2
         },
@@ -35,7 +35,7 @@
         "home": {
             "title": "Homepage",
             "hero_title": "Helloworld",
-            "hero_text": "Data",
+            "hero_text": "assaasA",
             "cta_button": "Get Started",
             "features_title": "Why Choose Us?",
             "features": [
@@ -107,7 +107,7 @@
         },
         "contact": {
             "title": "Contact",
-            "intro": "<p>Data<\/p>",
+            "intro": "<p>TETETE<\/p>",
             "content": "",
             "phone": "+ 123 45678 00",
             "email": "info@simplephp.org",
