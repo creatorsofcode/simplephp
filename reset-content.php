@@ -11,7 +11,7 @@
  * Intended to be called by a cron job, scheduled task or manually.
  *
  * Example cron (Linux, once per minute):
- * * * * * php /path/to/flatphp/reset-content.php >/dev/null 2>&1
+ * * * * * php /path/to/simplephp/reset-content.php >/dev/null 2>&1
  *
  * WARNING: This will overwrite content.json and selected core files when defaults exist.
  */
