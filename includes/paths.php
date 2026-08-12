@@ -59,8 +59,10 @@ if (!empty($_SERVER['DOCUMENT_ROOT'])) {
 $dataHtaccess = SIMPLEPHP_DATA_DIR . '/.htaccess';
 if (!file_exists($dataHtaccess)) {
     @file_put_contents($dataHtaccess, "Require all denied\nDeny from all\n");
+    @chmod($dataHtaccess, 0640);
 }
 $dataIndex = SIMPLEPHP_DATA_DIR . '/index.php';
 if (!file_exists($dataIndex)) {
     @file_put_contents($dataIndex, "<?php\nhttp_response_code(403);\nexit('Forbidden');\n");
+    @chmod($dataIndex, 0640);
 }

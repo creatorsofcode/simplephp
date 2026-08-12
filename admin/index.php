@@ -7,22 +7,18 @@
 require_once __DIR__ . '/../includes/Security.php';
 simplephp_secure_session_start();
 
-// Check authentication
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header('Location: login.php');
-    exit;
-}
-
-// Demo protection: revert content.json if a scheduled auto-reset is due
-require_once __DIR__ . '/../includes/ContentReset.php';
-simplephp_maybe_auto_reset_content();
-
-// Logout handler
+// Logout handler - allowed even if the account is mid forced-password-change.
 if (isset($_GET['logout'])) {
     session_destroy();
     header('Location: login.php');
     exit;
 }
+
+simplephp_require_admin_login();
+
+// Demo protection: revert content.json if a scheduled auto-reset is due
+require_once __DIR__ . '/../includes/ContentReset.php';
+simplephp_maybe_auto_reset_content();
 
 $usersFile = SIMPLEPHP_DATA_DIR . '/users.json';
 $contentFile = SIMPLEPHP_DATA_DIR . '/content.json';

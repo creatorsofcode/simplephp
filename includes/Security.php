@@ -35,6 +35,115 @@ function simplephp_secure_session_start(): void
 }
 
 /* ----------------------------------------------------------------------
+ * HTTP security headers
+ * -------------------------------------------------------------------- */
+
+/**
+ * Send a CSP + supporting headers compatible with what this app actually
+ * does today: Bootstrap/Feather Icons from jsdelivr, Google Fonts, and -
+ * importantly - admin-authored custom CSS/JS (design.custom_css/custom_js)
+ * rendered inline on the public site by design (see docs/CUSTOM_CODE.md).
+ * That last feature is why script-src/style-src need 'unsafe-inline': the
+ * whole point of that admin feature is to run inline code the admin wrote.
+ * CSP here is defense-in-depth around that, not the primary XSS defense -
+ * the real defenses against untrusted (visitor-supplied) content are
+ * output escaping (htmlspecialchars) and the allowlist HTML sanitizer in
+ * simplephp_sanitize_html(), which never let visitor input reach a
+ * <script> tag or an event-handler attribute in the first place.
+ */
+function simplephp_send_security_headers(): void
+{
+    if (headers_sent()) {
+        return;
+    }
+
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+
+    $csp = implode('; ', [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://connect.facebook.net",
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com data:",
+        "img-src 'self' data: https:",
+        "connect-src 'self' https://www.google-analytics.com https://www.facebook.com",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'self'",
+    ]);
+
+    header("Content-Security-Policy: $csp");
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
+    header('X-Frame-Options: SAMEORIGIN'); // legacy fallback for browsers that ignore frame-ancestors
+
+    if ($isHttps) {
+        // Only sent over HTTPS - sending it over plain HTTP would be a lie
+        // (and could break a not-yet-HTTPS deployment for a year).
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
+}
+
+/* ----------------------------------------------------------------------
+ * Admin authentication (centralized so no admin page can forget a check)
+ * -------------------------------------------------------------------- */
+
+/**
+ * Require an authenticated admin for an HTML admin page: starts the
+ * secure session, redirects to $loginUrl if not logged in, and - unless
+ * the current script IS $forceChangeUrl - redirects there instead if the
+ * account is flagged to require a new password before doing anything else.
+ *
+ * $loginUrl/$forceChangeUrl are relative URLs resolved by the browser
+ * against the current page, so callers just pass the filename appropriate
+ * to their own directory depth (both admin/*.php files sit next to
+ * login.php and force-password-change.php, so the defaults work there).
+ */
+function simplephp_require_admin_login(string $loginUrl = 'login.php', string $forceChangeUrl = 'force-password-change.php'): void
+{
+    simplephp_secure_session_start();
+
+    if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+        header('Location: ' . $loginUrl);
+        exit;
+    }
+
+    $currentScript = basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+    if (!empty($_SESSION['must_change_password']) && $currentScript !== basename($forceChangeUrl)) {
+        header('Location: ' . $forceChangeUrl);
+        exit;
+    }
+}
+
+/* ----------------------------------------------------------------------
+ * User records (users.json)
+ *
+ * Two formats are supported per-entry:
+ *   "username": "$2y$...hash..."                              (legacy)
+ *   "username": {"hash": "$2y$...", "must_change_password": true}
+ * so existing accounts keep working unchanged while new/flagged accounts
+ * can require a password reset before they can use the admin area.
+ * -------------------------------------------------------------------- */
+
+function simplephp_user_hash($record): ?string
+{
+    if (is_string($record)) {
+        return $record;
+    }
+    if (is_array($record) && isset($record['hash']) && is_string($record['hash'])) {
+        return $record['hash'];
+    }
+    return null;
+}
+
+function simplephp_user_must_change_password($record): bool
+{
+    return is_array($record) && !empty($record['must_change_password']);
+}
+
+/* ----------------------------------------------------------------------
  * CSRF protection
  * -------------------------------------------------------------------- */
 
@@ -120,9 +229,13 @@ function simplephp_rate_limit_attempt(string $key, int $maxAttempts, int $window
     $file = simplephp_rate_limit_file($key);
     $now = time();
 
+    $fileIsNew = !file_exists($file);
     $fp = @fopen($file, 'c+b');
     if (!$fp) {
         return ['allowed' => false, 'retry_after' => $windowSeconds];
+    }
+    if ($fileIsNew) {
+        @chmod($file, 0600);
     }
 
     if (!flock($fp, LOCK_EX)) {
@@ -265,6 +378,11 @@ function simplephp_json_write(string $path, $data, int $flags = JSON_PRETTY_PRIN
         return false;
     }
 
+    // Restrictive permissions (owner read/write only) before the file is
+    // visible at its final name - no window where it's briefly world/group
+    // readable. No-op on Windows filesystems that don't honor POSIX bits.
+    @chmod($tmp, 0600);
+
     if (!@rename($tmp, $path)) {
         @unlink($tmp);
         return false;
@@ -298,9 +416,13 @@ function simplephp_json_update(string $path, callable $mutator, $default = [])
     }
 
     $lockPath = $path . '.lock';
+    $lockIsNew = !file_exists($lockPath);
     $lockFp = @fopen($lockPath, 'c+b');
     if (!$lockFp) {
         throw new RuntimeException("Cannot open lock file for $path");
+    }
+    if ($lockIsNew) {
+        @chmod($lockPath, 0600);
     }
 
     if (!flock($lockFp, LOCK_EX)) {
@@ -337,6 +459,11 @@ function simplephp_json_update(string $path, callable $mutator, $default = [])
 
         $tmp = $path . '.tmp' . bin2hex(random_bytes(4));
         $written = @file_put_contents($tmp, $json);
+        if ($written !== false && $written === strlen($json)) {
+            // Restrictive permissions before the file becomes visible at
+            // its final name (see simplephp_json_write for the same logic).
+            @chmod($tmp, 0600);
+        }
         $renamed = $written !== false && $written === strlen($json) && @rename($tmp, $path);
 
         if (!$renamed) {
@@ -449,3 +576,9 @@ function simplephp_sanitize_node(DOMNode $node, array $allowedTags, array $allow
         simplephp_sanitize_node($child, $allowedTags, $allowedProtocols);
     }
 }
+
+// Every file in the app requires_once this file before producing any
+// output, so sending the security headers here - once - guarantees they're
+// present everywhere without relying on each entrypoint remembering to
+// call it individually.
+simplephp_send_security_headers();

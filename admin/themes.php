@@ -1,11 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/Security.php';
-simplephp_secure_session_start();
-
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header('Location: login.php');
-    exit;
-}
+simplephp_require_admin_login();
 
 $themesDir = __DIR__ . '/../themes';
 $themeConfigFile = SIMPLEPHP_DATA_DIR . '/theme-config.json';

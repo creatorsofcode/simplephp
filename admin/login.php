@@ -32,23 +32,27 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     } elseif (!simplephp_csrf_valid()) {
         $error = 'Your session expired. Please try again.';
     } else {
-        // Load users from JSON
+        // Load users from JSON. Each record is either a plain bcrypt hash
+        // string (legacy) or {"hash": "...", "must_change_password": bool}.
         $users_file = SIMPLEPHP_DATA_DIR . '/users.json';
         $users = simplephp_json_read($users_file, []);
+        $record = $users[$username] ?? null;
+        $hash = $record !== null ? simplephp_user_hash($record) : null;
 
-        // Verify credentials - users.json has format: {"username": "password_hash"}
-        if(isset($users[$username]) && is_string($users[$username]) && password_verify($password, $users[$username])){
+        if($hash !== null && password_verify($password, $hash)){
             simplephp_rate_limit_clear($ipKey);
             simplephp_rate_limit_clear($userKey);
 
             session_regenerate_id(true);
             $_SESSION['admin_logged_in'] = true;
             $_SESSION['admin_username'] = $username;
+            $_SESSION['must_change_password'] = simplephp_user_must_change_password($record);
             header('Location: index.php');
             exit;
         }
 
         // Attempt already recorded by simplephp_rate_limit_attempt() above.
+        // Generic message regardless of whether the username exists.
         $error = 'Invalid username or password';
     }
 }

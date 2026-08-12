@@ -4,6 +4,9 @@
  * Star Admin 2 Inspired Design
  */
 
+require_once __DIR__ . '/../../includes/Security.php';
+simplephp_require_admin_login('../login.php', '../force-password-change.php');
+
 // Page configuration
 $page_title = 'Forms - Basic Elements';
 $page_header = [

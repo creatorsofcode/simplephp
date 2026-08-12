@@ -88,11 +88,27 @@ class ModuleManager {
     }
     
     /**
+     * Module IDs become directory/file path segments in several places
+     * below (getModuleInfo, getModuleConfigSchema, hasConfiguration).
+     * They come straight from $_POST in the admin endpoints, so reject
+     * anything that isn't a plain folder-name-safe token before it ever
+     * touches a filesystem path - blocks "../", absolute paths, null
+     * bytes, etc.
+     */
+    private function isValidModuleId($moduleId): bool {
+        return is_string($moduleId) && $moduleId !== '' && preg_match('/^[a-zA-Z0-9_-]+$/', $moduleId) === 1;
+    }
+
+    /**
      * Get module information
      */
     public function getModuleInfo($moduleId) {
+        if (!$this->isValidModuleId($moduleId)) {
+            return null;
+        }
+
         $infoFile = $this->modulesDir . '/' . $moduleId . '/module.json';
-        
+
         if (file_exists($infoFile)) {
             $info = json_decode(file_get_contents($infoFile), true);
             if ($info) {
@@ -345,8 +361,12 @@ class ModuleManager {
      * Returns the configuration fields defined in config.json
      */
     public function getModuleConfigSchema($moduleId) {
+        if (!$this->isValidModuleId($moduleId)) {
+            return null;
+        }
+
         $configSchemaFile = $this->modulesDir . '/' . $moduleId . '/config.json';
-        
+
         if (file_exists($configSchemaFile)) {
             return json_decode(file_get_contents($configSchemaFile), true);
         }
@@ -385,6 +405,9 @@ class ModuleManager {
      * Check if module has configuration
      */
     public function hasConfiguration($moduleId) {
+        if (!$this->isValidModuleId($moduleId)) {
+            return false;
+        }
         $configSchemaFile = $this->modulesDir . '/' . $moduleId . '/config.json';
         return file_exists($configSchemaFile);
     }

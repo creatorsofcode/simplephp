@@ -1,12 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/Security.php';
-simplephp_secure_session_start();
-
-// Check if user is logged in
-if(!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true){
-        header('Location: login.php');
-        exit;
-}
+simplephp_require_admin_login();
 
 require_once __DIR__ . '/../includes/ModuleManager.php';
 

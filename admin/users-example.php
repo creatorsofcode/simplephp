@@ -4,16 +4,8 @@
  * Note: Replace this file with actual users management logic
  */
 
-// Start session
-if (!isset($_SESSION)) {
-    session_start();
-}
-
-// Check authentication
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header('Location: login.php');
-    exit;
-}
+require_once __DIR__ . '/../includes/Security.php';
+simplephp_require_admin_login();
 
 // Page configuration
 $page_title = 'Users';
