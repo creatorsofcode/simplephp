@@ -41,7 +41,16 @@ if (file_exists($themeFile)) {
 
 
 $data = simplephp_json_read(SIMPLEPHP_DATA_DIR . '/content.json', ['menu' => [], 'pages' => [], 'site' => []]);
-$page = $_GET['page'] ?? 'home';
+
+// $page is echoed unescaped into data-editable="pages.{$page}...." HTML
+// attributes throughout renderMainHtml() below, so it must never contain
+// HTML-special characters - page IDs are plain slugs, so validate against
+// that instead of relying on remembering to escape every echo site.
+$page = is_string($_GET['page'] ?? null) ? $_GET['page'] : 'home';
+if (!preg_match('/^[a-zA-Z0-9_-]+$/', $page)) {
+    $page = 'home';
+}
+
 $siteData = $data['site'];
 $menu = $data['menu'] ?? [];
 // Sort menu by order
