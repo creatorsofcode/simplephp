@@ -520,7 +520,7 @@ function simplephp_sanitize_html(string $html): string
         return '';
     }
 
-    simplephp_sanitize_node($root, $allowedTags, $allowedProtocols);
+    simplephp_sanitize_node($root, $allowedTags, $allowedProtocols, 0);
 
     $out = '';
     foreach (iterator_to_array($root->childNodes) as $child) {
@@ -529,8 +529,21 @@ function simplephp_sanitize_html(string $html): string
     return trim($out);
 }
 
-function simplephp_sanitize_node(DOMNode $node, array $allowedTags, array $allowedProtocols): void
+/**
+ * $depth guards against pathological markup (e.g. deeply nested divs/spans
+ * from a Word/Google Docs paste) driving unbounded recursion, which - unlike
+ * a normal PHP exception - can crash the worker outright and leave the HTTP
+ * response empty rather than a JSON error.
+ */
+function simplephp_sanitize_node(DOMNode $node, array $allowedTags, array $allowedProtocols, int $depth = 0): void
 {
+    if ($depth > 100) {
+        foreach (iterator_to_array($node->childNodes) as $child) {
+            $node->removeChild($child);
+        }
+        return;
+    }
+
     foreach (iterator_to_array($node->childNodes) as $child) {
         if ($child instanceof DOMText) {
             continue;
@@ -580,7 +593,7 @@ function simplephp_sanitize_node(DOMNode $node, array $allowedTags, array $allow
             $child->setAttribute('rel', 'noopener noreferrer');
         }
 
-        simplephp_sanitize_node($child, $allowedTags, $allowedProtocols);
+        simplephp_sanitize_node($child, $allowedTags, $allowedProtocols, $depth + 1);
     }
 }
 

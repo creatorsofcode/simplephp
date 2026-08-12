@@ -51,13 +51,17 @@ function sanitizeContent($content) {
     return $content;
 }
 
-$sanitizedData = sanitizeContent($data);
-
 // Save to content.json
 $contentFile = SIMPLEPHP_DATA_DIR . '/content.json';
 $backupDir = SIMPLEPHP_DATA_DIR . '/backups';
 
 try {
+    // Sanitizing runs inside this try block (and the catch below is Throwable,
+    // not just Exception) so that any failure here - a DOMDocument/libxml
+    // issue, a TypeError, etc. - still produces a valid JSON error response
+    // instead of an empty body that breaks response.json() on the client.
+    $sanitizedData = sanitizeContent($data);
+
     // Create a backup before saving
     $backupFile = $backupDir . '/content.backup.' . date('Y-m-d_H-i-s') . '.json';
     if (file_exists($contentFile)) {
@@ -96,7 +100,7 @@ try {
         'reset_in_seconds' => 30
     ]);
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     header('Content-Type: application/json');
     echo json_encode([
         'success' => false,
