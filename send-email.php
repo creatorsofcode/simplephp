@@ -12,10 +12,12 @@ if (!empty($_POST['website'])) {
 }
 
 // Rate limit contact-form submissions per IP to curb spam/abuse.
+// Checked and recorded atomically under one lock (simplephp_rate_limit_attempt)
+// so concurrent requests can't both slip through a separate check-then-record step.
 $ip = simplephp_client_ip();
 $rateKey = 'contact_form_' . $ip;
-$rateStatus = simplephp_rate_limit_status($rateKey, 5, 600);
-if (!$rateStatus['allowed']) {
+$rateResult = simplephp_rate_limit_attempt($rateKey, 5, 600, 600);
+if (!$rateResult['allowed']) {
     http_response_code(429);
     echo json_encode([
         'success' => false,
@@ -23,7 +25,6 @@ if (!$rateStatus['allowed']) {
     ]);
     exit;
 }
-simplephp_rate_limit_hit($rateKey, 5, 600, 600);
 
 // Get site data to get recipient email
 $data = simplephp_json_read(SIMPLEPHP_DATA_DIR . '/content.json', ['site' => [], 'pages' => []]);
@@ -64,14 +65,30 @@ if(!empty($errors)){
     exit;
 }
 
+// Strip any stray CR/LF before anything derived from user input touches a
+// mail header - defends against header injection (extra Bcc:/To: lines etc)
+// even though FILTER_VALIDATE_EMAIL already rejects them in $email.
+$headerSafeName = str_replace(["\r", "\n"], '', $name);
+$headerSafeEmail = str_replace(["\r", "\n"], '', $email);
+
 // Prepare email
 $subject = "Contact Form Submission from " . htmlspecialchars($name);
 $emailBody = "Name: " . htmlspecialchars($name) . "\n";
 $emailBody .= "Email: " . htmlspecialchars($email) . "\n";
 $emailBody .= "Message:\n" . htmlspecialchars($message) . "\n";
 
-$headers = "From: " . htmlspecialchars($email) . "\r\n";
-$headers .= "Reply-To: " . htmlspecialchars($email) . "\r\n";
+// From: must be an address the sending server actually controls - using the
+// visitor's own address here caused spoofing/deliverability problems (fails
+// SPF/DKIM) and let visitor-controlled input dictate an auth-sensitive header.
+// The visitor's address goes in Reply-To instead, where it belongs.
+$siteHost = preg_replace('/[^a-zA-Z0-9.\-]/', '', (string) ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? 'localhost'));
+if ($siteHost === '') {
+    $siteHost = 'localhost';
+}
+$fromAddress = 'no-reply@' . $siteHost;
+
+$headers = "From: " . $headerSafeName . " <" . $fromAddress . ">\r\n";
+$headers .= "Reply-To: " . $headerSafeName . " <" . $headerSafeEmail . ">\r\n";
 $headers .= "X-Mailer: PHP/" . phpversion();
 
 // Send email

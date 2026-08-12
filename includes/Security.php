@@ -51,9 +51,17 @@ function simplephp_csrf_field(): string
     return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(simplephp_csrf_token(), ENT_QUOTES) . '">';
 }
 
-/** Verify the CSRF token from a POST field or the X-CSRF-Token header. */
+/**
+ * Verify the CSRF token from a POST field or the X-CSRF-Token header.
+ * Always requires the request itself to be a POST - a GET (or any other
+ * method) never carries a valid CSRF proof, regardless of caller.
+ */
 function simplephp_csrf_valid(): bool
 {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        return false;
+    }
+
     if (empty($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
         return false;
     }
@@ -97,25 +105,32 @@ function simplephp_rate_limit_file(string $key): string
 }
 
 /**
+ * Atomically check-and-record one attempt against $key under a single
+ * exclusive lock, so concurrent requests can't both slip through between
+ * a separate "check" and "record" step (the old status()+hit() pair had
+ * exactly that race).
+ *
+ * Fails CLOSED: if the rate-limit store can't be opened or locked, the
+ * attempt is treated as NOT allowed rather than silently let through.
+ *
  * Returns ['allowed' => bool, 'retry_after' => int seconds].
- * Does not record an attempt by itself - call simplephp_rate_limit_hit()
- * for that once you know whether the attempt should count.
  */
-function simplephp_rate_limit_status(string $key, int $maxAttempts, int $windowSeconds): array
+function simplephp_rate_limit_attempt(string $key, int $maxAttempts, int $windowSeconds, int $lockoutSeconds): array
 {
     $file = simplephp_rate_limit_file($key);
     $now = time();
 
     $fp = @fopen($file, 'c+b');
     if (!$fp) {
-        return ['allowed' => true, 'retry_after' => 0];
+        return ['allowed' => false, 'retry_after' => $windowSeconds];
     }
 
-    flock($fp, LOCK_SH);
-    $raw = stream_get_contents($fp);
-    flock($fp, LOCK_UN);
-    fclose($fp);
+    if (!flock($fp, LOCK_EX)) {
+        fclose($fp);
+        return ['allowed' => false, 'retry_after' => $windowSeconds];
+    }
 
+    $raw = stream_get_contents($fp);
     $data = json_decode((string) $raw, true);
     if (!is_array($data)) {
         $data = ['attempts' => [], 'locked_until' => 0];
@@ -123,52 +138,45 @@ function simplephp_rate_limit_status(string $key, int $maxAttempts, int $windowS
 
     $lockedUntil = (int) ($data['locked_until'] ?? 0);
     if ($lockedUntil > $now) {
+        flock($fp, LOCK_UN);
+        fclose($fp);
         return ['allowed' => false, 'retry_after' => $lockedUntil - $now];
     }
 
     $attempts = array_values(array_filter((array) ($data['attempts'] ?? []), static fn($t) => is_numeric($t) && $t > $now - $windowSeconds));
 
-    if (count($attempts) >= $maxAttempts) {
-        return ['allowed' => false, 'retry_after' => $windowSeconds];
-    }
-
-    return ['allowed' => true, 'retry_after' => 0];
-}
-
-/** Record one attempt against the given key, locking a fresh window if the limit is exceeded. */
-function simplephp_rate_limit_hit(string $key, int $maxAttempts, int $windowSeconds, int $lockoutSeconds): void
-{
-    $file = simplephp_rate_limit_file($key);
-    $now = time();
-
-    $fp = @fopen($file, 'c+b');
-    if (!$fp) {
-        return;
-    }
-
-    flock($fp, LOCK_EX);
-    $raw = stream_get_contents($fp);
-    $data = json_decode((string) $raw, true);
-    if (!is_array($data)) {
-        $data = ['attempts' => [], 'locked_until' => 0];
-    }
-
-    $attempts = array_values(array_filter((array) ($data['attempts'] ?? []), static fn($t) => is_numeric($t) && $t > $now - $windowSeconds));
-    $attempts[] = $now;
-
-    $lockedUntil = (int) ($data['locked_until'] ?? 0);
+    // $maxAttempts already used up within the window -> this request is the
+    // one that gets rejected and starts the lockout (doesn't get counted
+    // again itself, so maxAttempts genuinely means "N tries allowed").
     if (count($attempts) >= $maxAttempts) {
         $lockedUntil = $now + $lockoutSeconds;
+        $writeOk = ftruncate($fp, 0) && rewind($fp) !== false;
+        $bytesWritten = $writeOk ? fwrite($fp, (string) json_encode(['attempts' => $attempts, 'locked_until' => $lockedUntil])) : false;
+        fflush($fp);
+        flock($fp, LOCK_UN);
+        fclose($fp);
+
+        return $bytesWritten === false
+            ? ['allowed' => false, 'retry_after' => $windowSeconds]
+            : ['allowed' => false, 'retry_after' => $lockoutSeconds];
     }
 
-    $data = ['attempts' => $attempts, 'locked_until' => $lockedUntil];
+    $attempts[] = $now;
+    $result = ['allowed' => true, 'retry_after' => 0];
 
-    ftruncate($fp, 0);
-    rewind($fp);
-    fwrite($fp, json_encode($data));
+    $writeOk = ftruncate($fp, 0) && rewind($fp) !== false;
+    $bytesWritten = $writeOk ? fwrite($fp, (string) json_encode(['attempts' => $attempts, 'locked_until' => 0])) : false;
     fflush($fp);
     flock($fp, LOCK_UN);
     fclose($fp);
+
+    if ($bytesWritten === false) {
+        // Couldn't persist the attempt - fail closed rather than risk an
+        // unbounded number of un-tracked attempts getting through.
+        return ['allowed' => false, 'retry_after' => $windowSeconds];
+    }
+
+    return $result;
 }
 
 /** Clear rate-limit state for a key (e.g. on successful login). */
@@ -262,8 +270,15 @@ function simplephp_json_update(string $path, callable $mutator, $default = [])
     $new = $mutator($current);
 
     $tmp = $path . '.tmp' . bin2hex(random_bytes(4));
-    file_put_contents($tmp, (string) json_encode($new, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-    rename($tmp, $path);
+    $written = file_put_contents($tmp, (string) json_encode($new, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    $renamed = $written !== false && rename($tmp, $path);
+
+    if (!$renamed) {
+        @unlink($tmp);
+        flock($fp, LOCK_UN);
+        fclose($fp);
+        throw new RuntimeException("Failed to persist $path");
+    }
 
     flock($fp, LOCK_UN);
     fclose($fp);

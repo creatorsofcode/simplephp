@@ -62,9 +62,9 @@ function loadThemeConfig(string $themeConfigFile): array
     return $config;
 }
 
-function saveThemeConfig(string $themeConfigFile, array $config): void
+function saveThemeConfig(string $themeConfigFile, array $config): bool
 {
-    simplephp_json_write($themeConfigFile, $config);
+    return simplephp_json_write($themeConfigFile, $config);
 }
 
 function normalizeThemeId(string $rawId): string
@@ -209,7 +209,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $config['enabled_themes'] = $enabledThemes;
-            saveThemeConfig($themeConfigFile, $config);
+            if (!saveThemeConfig($themeConfigFile, $config)) {
+                throw new Exception('Failed to save theme configuration');
+            }
 
             header('Content-Type: application/json');
             echo json_encode([
@@ -315,7 +317,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $config = loadThemeConfig($themeConfigFile);
                 if (!in_array($themeId, $config['enabled_themes'], true)) {
                     $config['enabled_themes'][] = $themeId;
-                    saveThemeConfig($themeConfigFile, $config);
+                    if (!saveThemeConfig($themeConfigFile, $config)) {
+                        throw new Exception('Theme created, but failed to enable it. Please try enabling it manually.');
+                    }
                 }
             }
 

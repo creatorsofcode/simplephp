@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!simplephp_csrf_valid()) {
         $error = 'Your session expired. Please reload the page and try again.';
     } else {
+    try {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'add_user') {
@@ -133,6 +134,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = 'Menu ID and label are required.';
         }
+    }
+    } catch (RuntimeException $e) {
+        $error = 'Failed to save changes. Please try again.';
     }
     }
 }

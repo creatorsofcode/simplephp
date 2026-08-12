@@ -38,13 +38,21 @@ class ModuleManager {
     /**
      * Atomically read-modify-write modules.json under an exclusive lock,
      * then sync the in-memory snapshot so this request sees the result.
+     * Returns true on success, false if the write failed (storage error,
+     * permissions, disk full, ...) - callers turn that into a user-facing
+     * error instead of letting the exception surface as a fatal.
      */
-    private function mutateModulesData(callable $mutator) {
-        $this->modulesData = simplephp_json_update(
-            $this->dataFile,
-            $mutator,
-            ['installed' => [], 'active' => []]
-        );
+    private function mutateModulesData(callable $mutator): bool {
+        try {
+            $this->modulesData = simplephp_json_update(
+                $this->dataFile,
+                $mutator,
+                ['installed' => [], 'active' => []]
+            );
+            return true;
+        } catch (RuntimeException $e) {
+            return false;
+        }
     }
     
     /**
@@ -130,13 +138,16 @@ class ModuleManager {
         }
         
         // Mark as installed
-        $this->mutateModulesData(function ($data) use ($moduleId) {
+        $ok = $this->mutateModulesData(function ($data) use ($moduleId) {
             $data['installed'] = $data['installed'] ?? [];
             if (!in_array($moduleId, $data['installed'], true)) {
                 $data['installed'][] = $moduleId;
             }
             return $data;
         });
+        if (!$ok) {
+            return ['success' => false, 'message' => 'Module installed, but failed to save module state. Please retry.'];
+        }
 
         return ['success' => true, 'message' => 'Module installed successfully'];
     }
@@ -170,10 +181,13 @@ class ModuleManager {
         }
         
         // Remove from installed
-        $this->mutateModulesData(function ($data) use ($moduleId) {
+        $ok = $this->mutateModulesData(function ($data) use ($moduleId) {
             $data['installed'] = array_values(array_diff($data['installed'] ?? [], [$moduleId]));
             return $data;
         });
+        if (!$ok) {
+            return ['success' => false, 'message' => 'Failed to save module state. Please retry.'];
+        }
 
         return ['success' => true, 'message' => 'Module uninstalled successfully'];
     }
@@ -197,13 +211,16 @@ class ModuleManager {
         }
         
         // Add to active modules
-        $this->mutateModulesData(function ($data) use ($moduleId) {
+        $ok = $this->mutateModulesData(function ($data) use ($moduleId) {
             $data['active'] = $data['active'] ?? [];
             if (!in_array($moduleId, $data['active'], true)) {
                 $data['active'][] = $moduleId;
             }
             return $data;
         });
+        if (!$ok) {
+            return ['success' => false, 'message' => 'Failed to save module state. Please retry.'];
+        }
 
         return ['success' => true, 'message' => 'Module activated successfully'];
     }
@@ -223,10 +240,13 @@ class ModuleManager {
         }
         
         // Remove from active modules
-        $this->mutateModulesData(function ($data) use ($moduleId) {
+        $ok = $this->mutateModulesData(function ($data) use ($moduleId) {
             $data['active'] = array_values(array_diff($data['active'] ?? [], [$moduleId]));
             return $data;
         });
+        if (!$ok) {
+            return ['success' => false, 'message' => 'Failed to save module state. Please retry.'];
+        }
 
         return ['success' => true, 'message' => 'Module deactivated successfully'];
     }
@@ -349,11 +369,14 @@ class ModuleManager {
      * Save module configuration
      */
     public function saveModuleConfig($moduleId, $config) {
-        $this->mutateModulesData(function ($data) use ($moduleId, $config) {
+        $ok = $this->mutateModulesData(function ($data) use ($moduleId, $config) {
             $data['config'] = $data['config'] ?? [];
             $data['config'][$moduleId] = $config;
             return $data;
         });
+        if (!$ok) {
+            return ['success' => false, 'message' => 'Failed to save configuration. Please retry.'];
+        }
 
         return ['success' => true, 'message' => 'Configuration saved successfully'];
     }

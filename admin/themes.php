@@ -51,9 +51,9 @@ function loadThemeConfig(string $themeConfigFile): array
     return $config;
 }
 
-function saveThemeConfig(string $themeConfigFile, array $config): void
+function saveThemeConfig(string $themeConfigFile, array $config): bool
 {
-    simplephp_json_write($themeConfigFile, $config);
+    return simplephp_json_write($themeConfigFile, $config);
 }
 
 $message = null;
@@ -75,8 +75,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !simplephp_csrf_valid()) {
             $error = 'Theme is disabled.';
         } else {
             $config['active_theme'] = $themeId;
-            saveThemeConfig($themeConfigFile, $config);
-            $message = 'Theme activated successfully.';
+            if (saveThemeConfig($themeConfigFile, $config)) {
+                $message = 'Theme activated successfully.';
+            } else {
+                $error = 'Failed to save theme configuration. Please try again.';
+            }
         }
     }
 
@@ -112,7 +115,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !simplephp_csrf_valid()) {
 
             if ($error === null) {
                 $config['enabled_themes'] = $enabledThemes;
-                saveThemeConfig($themeConfigFile, $config);
+                if (!saveThemeConfig($themeConfigFile, $config)) {
+                    $error = 'Failed to save theme configuration. Please try again.';
+                    $message = null;
+                }
             }
         }
     }

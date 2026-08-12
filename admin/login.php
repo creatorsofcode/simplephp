@@ -21,12 +21,14 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $userKey = 'login_user_' . strtolower($username);
 
     // Brute-force protection: cap attempts per IP and per username separately.
-    $ipStatus = simplephp_rate_limit_status($ipKey, 20, 900);
-    $userStatus = $username !== '' ? simplephp_rate_limit_status($userKey, 5, 900) : ['allowed' => true, 'retry_after' => 0];
+    // Checked and recorded atomically (single lock) so concurrent requests
+    // can't both slip through between a check and a separate record step.
+    $ipAttempt = simplephp_rate_limit_attempt($ipKey, 20, 900, 900);
+    $userAttempt = $username !== '' ? simplephp_rate_limit_attempt($userKey, 5, 900, 900) : ['allowed' => true, 'retry_after' => 0];
 
-    if (!$ipStatus['allowed'] || !$userStatus['allowed']) {
+    if (!$ipAttempt['allowed'] || !$userAttempt['allowed']) {
         $error = 'Too many failed login attempts. Please try again later.';
-        $lockedRetryAfter = max($ipStatus['retry_after'], $userStatus['retry_after']);
+        $lockedRetryAfter = max($ipAttempt['retry_after'], $userAttempt['retry_after']);
     } elseif (!simplephp_csrf_valid()) {
         $error = 'Your session expired. Please try again.';
     } else {
@@ -46,11 +48,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             exit;
         }
 
-        simplephp_rate_limit_hit($ipKey, 20, 900, 900);
-        if ($username !== '') {
-            simplephp_rate_limit_hit($userKey, 5, 900, 900);
-        }
-
+        // Attempt already recorded by simplephp_rate_limit_attempt() above.
         $error = 'Invalid username or password';
     }
 }
