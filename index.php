@@ -232,30 +232,30 @@ if(!$contactPage){
       <?php foreach($pageData as $key => $value): ?>
         <?php if(is_array($value) && !empty($value) && !in_array($key, ['features', 'services', 'steps', 'title', 'intro', 'content', 'phone', 'email', 'address', 'form_title', 'form_name', 'form_email', 'form_message', 'form_submit'])): ?>
         <h3><?= htmlspecialchars(ucwords(str_replace('_', ' ', $key))) ?></h3>
-        <div class="grid-3" data-editable-container="<?= $key ?>">
+        <div class="grid-3" data-editable-container="<?= htmlspecialchars($key) ?>">
           <?php foreach($value as $index => $item): ?>
           <div class="card">
             <?php if(isset($item['title'])): ?>
-            <h4 data-editable="pages.<?= $page ?>.<?= $key ?>.<?= $index ?>.title"><?= htmlspecialchars($item['title']) ?></h4>
+            <h4 data-editable="pages.<?= $page ?>.<?= htmlspecialchars($key) ?>.<?= $index ?>.title"><?= htmlspecialchars($item['title']) ?></h4>
             <?php endif; ?>
             <?php if(isset($item['text'])): ?>
-            <div data-editable="pages.<?= $page ?>.<?= $key ?>.<?= $index ?>.text"><?= $item['text'] ?? '' ?></div>
+            <div data-editable="pages.<?= $page ?>.<?= htmlspecialchars($key) ?>.<?= $index ?>.text"><?= $item['text'] ?? '' ?></div>
             <?php elseif(isset($item['content'])): ?>
-            <div data-editable="pages.<?= $page ?>.<?= $key ?>.<?= $index ?>.content"><?= $item['content'] ?? '' ?></div>
+            <div data-editable="pages.<?= $page ?>.<?= htmlspecialchars($key) ?>.<?= $index ?>.content"><?= $item['content'] ?? '' ?></div>
             <?php endif; ?>
           </div>
           <?php endforeach; ?>
         </div>
         <?php elseif(is_array($value) && !empty($value) && in_array($key, ['features', 'services', 'steps'])): ?>
         <h3><?= htmlspecialchars(ucwords(str_replace('_', ' ', $key))) ?></h3>
-        <div class="grid-3" data-editable-container="<?= $key ?>">
+        <div class="grid-3" data-editable-container="<?= htmlspecialchars($key) ?>">
           <?php foreach($value as $index => $item): ?>
           <div class="card">
             <?php if(isset($item['title'])): ?>
-            <h4 data-editable="pages.<?= $page ?>.<?= $key ?>.<?= $index ?>.title"><?= htmlspecialchars($item['title']) ?></h4>
+            <h4 data-editable="pages.<?= $page ?>.<?= htmlspecialchars($key) ?>.<?= $index ?>.title"><?= htmlspecialchars($item['title']) ?></h4>
             <?php endif; ?>
             <?php if(isset($item['text'])): ?>
-            <div data-editable="pages.<?= $page ?>.<?= $key ?>.<?= $index ?>.text"><?= $item['text'] ?? '' ?></div>
+            <div data-editable="pages.<?= $page ?>.<?= htmlspecialchars($key) ?>.<?= $index ?>.text"><?= $item['text'] ?? '' ?></div>
             <?php endif; ?>
           </div>
           <?php endforeach; ?>
