@@ -133,7 +133,7 @@ class ModuleManager {
                     }
                 }
             } catch (Exception $e) {
-                return ['success' => false, 'message' => 'Installation error: ' . $e->getMessage()];
+                return ['success' => false, 'message' => simplephp_safe_error($e, 'ModuleManager:installModule:' . $moduleId)];
             }
         }
         

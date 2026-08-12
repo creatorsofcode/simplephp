@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
         header('Content-Type: application/json');
         echo json_encode([
             'success' => false,
-            'error' => $e->getMessage()
+            'error' => simplephp_safe_error($e, 'frontend-admin-themes:get_themes')
         ]);
     }
     exit;
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Content-Type: application/json');
             echo json_encode([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => simplephp_safe_error($e, 'frontend-admin-themes:set_theme')
             ]);
         }
     }
@@ -221,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
         } catch (Exception $e) {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            echo json_encode(['success' => false, 'error' => simplephp_safe_error($e, 'frontend-admin-themes:toggle_theme')]);
         }
         exit;
     }
@@ -331,7 +331,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
         } catch (Exception $e) {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            echo json_encode(['success' => false, 'error' => simplephp_safe_error($e, 'frontend-admin-themes:create_theme')]);
         }
         exit;
     }

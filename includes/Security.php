@@ -185,6 +185,19 @@ function simplephp_rate_limit_clear(string $key): void
     @unlink(simplephp_rate_limit_file($key));
 }
 
+/**
+ * Log the real exception message server-side and return a generic message
+ * safe to show the client. Exception messages can contain file paths,
+ * internal state, or other details we don't want to hand to whoever
+ * triggered the error - so callers should surface this return value to
+ * the client instead of $e->getMessage() directly.
+ */
+function simplephp_safe_error(Throwable $e, string $context = ''): string
+{
+    error_log(($context !== '' ? "[$context] " : '') . get_class($e) . ': ' . $e->getMessage());
+    return 'An internal error occurred. Please try again.';
+}
+
 /* ----------------------------------------------------------------------
  * Atomic / locked JSON storage
  * -------------------------------------------------------------------- */
@@ -212,12 +225,24 @@ function simplephp_json_read(string $path, $default = null)
     return $data;
 }
 
-/** Atomic write: write to a temp file, then rename over the target. */
+/**
+ * Atomic write: write to a temp file, then rename over the target.
+ * Every failure mode (can't create dir, can't encode, can't lock, partial
+ * write, can't rename) is checked - a failure never leaves a truncated or
+ * empty file in place of good data, since we only ever write to the temp
+ * file and rename() is atomic on the same filesystem.
+ */
 function simplephp_json_write(string $path, $data, int $flags = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE): bool
 {
     $dir = dirname($path);
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0750, true);
+    if (!is_dir($dir) && !@mkdir($dir, 0750, true) && !is_dir($dir)) {
+        return false;
+    }
+
+    try {
+        $json = json_encode($data, $flags | JSON_THROW_ON_ERROR);
+    } catch (JsonException $e) {
+        return false;
     }
 
     $tmp = $path . '.tmp' . bin2hex(random_bytes(4));
@@ -226,13 +251,21 @@ function simplephp_json_write(string $path, $data, int $flags = JSON_PRETTY_PRIN
         return false;
     }
 
-    flock($fp, LOCK_EX);
-    fwrite($fp, (string) json_encode($data, $flags));
-    fflush($fp);
-    flock($fp, LOCK_UN);
+    $ok = flock($fp, LOCK_EX);
+    if ($ok) {
+        $bytesWritten = fwrite($fp, $json);
+        $ok = $bytesWritten !== false && $bytesWritten === strlen($json);
+        $ok = fflush($fp) && $ok;
+        flock($fp, LOCK_UN);
+    }
     fclose($fp);
 
-    if (!rename($tmp, $path)) {
+    if (!$ok) {
+        @unlink($tmp);
+        return false;
+    }
+
+    if (!@rename($tmp, $path)) {
         @unlink($tmp);
         return false;
     }
@@ -240,50 +273,82 @@ function simplephp_json_write(string $path, $data, int $flags = JSON_PRETTY_PRIN
 }
 
 /**
- * Locked read-modify-write: holds an exclusive lock on $path for the whole
- * operation so concurrent requests can't interleave reads/writes, then
- * atomically replaces the file via a temp file + rename.
+ * Locked read-modify-write: holds an exclusive lock for the whole operation
+ * so concurrent requests can't interleave reads/writes, then atomically
+ * replaces $path via a temp file + rename.
+ *
+ * The lock is held on a separate $path.lock file, NOT on $path itself.
+ * On Windows, rename() cannot replace a file that currently has an open
+ * handle - even one held by this same process - so $path must never be
+ * kept open while we rename a temp file over it.
  *
  * $mutator receives the current decoded value (or $default) and must
  * return the new value to persist.
+ *
+ * Every step (open, lock, read, decode, encode, write, rename) is checked
+ * and raises a RuntimeException on failure. The lock is always released
+ * via finally, even if the mutator callback itself throws - otherwise a
+ * bug in a mutator would leave the file locked for the rest of the request.
  */
 function simplephp_json_update(string $path, callable $mutator, $default = [])
 {
     $dir = dirname($path);
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0750, true);
+    if (!is_dir($dir) && !@mkdir($dir, 0750, true) && !is_dir($dir)) {
+        throw new RuntimeException("Cannot create directory for $path");
     }
 
-    $fp = fopen($path, 'c+b');
-    if (!$fp) {
-        throw new RuntimeException("Cannot open $path for locked update");
+    $lockPath = $path . '.lock';
+    $lockFp = @fopen($lockPath, 'c+b');
+    if (!$lockFp) {
+        throw new RuntimeException("Cannot open lock file for $path");
     }
 
-    if (!flock($fp, LOCK_EX)) {
-        fclose($fp);
+    if (!flock($lockFp, LOCK_EX)) {
+        fclose($lockFp);
         throw new RuntimeException("Cannot lock $path");
     }
 
-    $raw = stream_get_contents($fp);
-    $current = ($raw === '' || $raw === false) ? $default : (json_decode($raw, true) ?? $default);
+    try {
+        $raw = file_exists($path) ? @file_get_contents($path) : '';
+        if ($raw === false) {
+            throw new RuntimeException("Cannot read $path");
+        }
 
-    $new = $mutator($current);
+        if (trim($raw) === '') {
+            $current = $default;
+        } else {
+            try {
+                $current = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $e) {
+                // Existing file is corrupt/unreadable JSON - treat as the
+                // caller-supplied default rather than propagating a decode
+                // error for state we didn't just write ourselves.
+                $current = $default;
+            }
+        }
 
-    $tmp = $path . '.tmp' . bin2hex(random_bytes(4));
-    $written = file_put_contents($tmp, (string) json_encode($new, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-    $renamed = $written !== false && rename($tmp, $path);
+        $new = $mutator($current);
 
-    if (!$renamed) {
-        @unlink($tmp);
-        flock($fp, LOCK_UN);
-        fclose($fp);
-        throw new RuntimeException("Failed to persist $path");
+        try {
+            $json = json_encode($new, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new RuntimeException("Failed to encode data for $path: " . $e->getMessage(), 0, $e);
+        }
+
+        $tmp = $path . '.tmp' . bin2hex(random_bytes(4));
+        $written = @file_put_contents($tmp, $json);
+        $renamed = $written !== false && $written === strlen($json) && @rename($tmp, $path);
+
+        if (!$renamed) {
+            @unlink($tmp);
+            throw new RuntimeException("Failed to persist $path");
+        }
+
+        return $new;
+    } finally {
+        flock($lockFp, LOCK_UN);
+        fclose($lockFp);
     }
-
-    flock($fp, LOCK_UN);
-    fclose($fp);
-
-    return $new;
 }
 
 /* ----------------------------------------------------------------------

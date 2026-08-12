@@ -90,6 +90,6 @@ try {
     header('Content-Type: application/json');
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => simplephp_safe_error($e, 'save-inline-edit')
     ]);
 }
