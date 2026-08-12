@@ -24,7 +24,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     // Checked and recorded atomically (single lock) so concurrent requests
     // can't both slip through between a check and a separate record step.
     $ipAttempt = simplephp_rate_limit_attempt($ipKey, 20, 900, 900);
-    $userAttempt = $username !== '' ? simplephp_rate_limit_attempt($userKey, 5, 900, 900) : ['allowed' => true, 'retry_after' => 0];
+    $userAttempt = $username !== '' ? simplephp_rate_limit_attempt($userKey, 3, 900, 900) : ['allowed' => true, 'retry_after' => 0];
 
     if (!$ipAttempt['allowed'] || !$userAttempt['allowed']) {
         $error = 'Too many failed login attempts. Please try again later.';
