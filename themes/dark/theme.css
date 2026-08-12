@@ -1,0 +1,49 @@
+/* Dark Theme */
+:root {
+    --theme-bg: #1F2937;
+    --theme-text: #F3F4F6;
+    --theme-primary: #60A5FA;
+    --theme-secondary: #374151;
+    --theme-accent: #E5E7EB;
+    --theme-border: #4B5563;
+}
+
+body.theme-dark {
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+}
+
+body.theme-dark, .theme-dark {
+    --accent-color: var(--theme-primary);
+    --text-color: var(--theme-text);
+    --bg-color: var(--theme-bg);
+    --border-color: var(--theme-border);
+}
+
+.theme-dark .btn-primary {
+    background-color: var(--theme-primary);
+    color: #1F2937;
+}
+
+.theme-dark .btn-primary:hover {
+    background-color: #3B82F6;
+}
+
+.theme-dark .admin-panel {
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    border: 1px solid var(--theme-border);
+}
+
+.theme-dark .admin-section {
+    background-color: var(--theme-secondary);
+    border: 1px solid var(--theme-border);
+}
+
+.theme-dark input,
+.theme-dark textarea,
+.theme-dark select {
+    background-color: var(--theme-secondary);
+    color: var(--theme-text);
+    border: 1px solid var(--theme-border);
+}

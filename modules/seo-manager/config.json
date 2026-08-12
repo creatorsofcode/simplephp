@@ -1,0 +1,64 @@
+{
+    "description": "Configure SEO settings for your website including meta tags, Open Graph, and social media integration.",
+    "fields": [
+        {
+            "name": "default_meta_description",
+            "label": "Default Meta Description",
+            "type": "textarea",
+            "placeholder": "Enter a default meta description for pages without one",
+            "help": "This will be used when pages don't have their own meta description.",
+            "default": "Welcome to our website"
+        },
+        {
+            "name": "default_meta_keywords",
+            "label": "Default Meta Keywords",
+            "type": "text",
+            "placeholder": "keyword1, keyword2, keyword3",
+            "help": "Comma-separated list of keywords.",
+            "default": "cms, php, website"
+        },
+        {
+            "name": "og_site_name",
+            "label": "Open Graph Site Name",
+            "type": "text",
+            "placeholder": "Your Website Name",
+            "help": "The name of your website as it appears on social media."
+        },
+        {
+            "name": "og_image",
+            "label": "Default Open Graph Image URL",
+            "type": "url",
+            "placeholder": "https://example.com/image.jpg",
+            "help": "Default image displayed when sharing on social media (recommended: 1200x630px)."
+        },
+        {
+            "name": "twitter_handle",
+            "label": "Twitter Handle",
+            "type": "text",
+            "placeholder": "@yoursite",
+            "help": "Your Twitter username (with @).",
+            "default": "@yoursite"
+        },
+        {
+            "name": "enable_sitemap",
+            "label": "Enable Sitemap Generation",
+            "type": "checkbox",
+            "checkbox_label": "Automatically generate XML sitemap",
+            "help": "Creates a sitemap.xml file for search engines.",
+            "default": true
+        },
+        {
+            "name": "robots_content",
+            "label": "Robots Meta Tag Content",
+            "type": "select",
+            "options": {
+                "index, follow": "Index and Follow (Default)",
+                "noindex, follow": "No Index, Follow",
+                "index, nofollow": "Index, No Follow",
+                "noindex, nofollow": "No Index, No Follow"
+            },
+            "help": "Controls how search engines crawl and index your site.",
+            "default": "index, follow"
+        }
+    ]
+}

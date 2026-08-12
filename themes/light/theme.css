@@ -1,0 +1,41 @@
+/* Light Theme */
+:root {
+    --theme-bg: #FFFFFF;
+    --theme-text: #333333;
+    --theme-primary: #3B82F6;
+    --theme-secondary: #F3F4F6;
+    --theme-accent: #1F2937;
+    --theme-border: #E5E7EB;
+}
+
+body.theme-light {
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+}
+
+body.theme-light, .theme-light {
+    --accent-color: var(--theme-primary);
+    --text-color: var(--theme-text);
+    --bg-color: var(--theme-bg);
+    --border-color: var(--theme-border);
+}
+
+.theme-light .btn-primary {
+    background-color: var(--theme-primary);
+    color: white;
+}
+
+.theme-light .btn-primary:hover {
+    background-color: #2563EB;
+}
+
+.theme-light .admin-panel {
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    border: 1px solid var(--theme-border);
+}
+
+.theme-light .admin-section {
+    background-color: var(--theme-secondary);
+    border: 1px solid var(--theme-border);
+}

@@ -1,0 +1,15 @@
+{
+    "name": "Dark Theme",
+    "description": "Dark mode with comfortable eye-friendly colors",
+    "version": "1.0.0",
+    "author": "SimplePHP",
+    "thumbnail": "thumbnail.png",
+    "colors": {
+        "background": "#1F2937",
+        "text": "#F3F4F6",
+        "primary": "#60A5FA",
+        "secondary": "#374151",
+        "accent": "#E5E7EB"
+    },
+    "active": false
+}

@@ -1,0 +1,15 @@
+{
+    "name": "Light Theme",
+    "description": "Clean, bright appearance with white backgrounds",
+    "version": "1.0.0",
+    "author": "SimplePHP",
+    "thumbnail": "thumbnail.png",
+    "colors": {
+        "background": "#FFFFFF",
+        "text": "#333333",
+        "primary": "#3B82F6",
+        "secondary": "#F3F4F6",
+        "accent": "#1F2937"
+    },
+    "active": true
+}

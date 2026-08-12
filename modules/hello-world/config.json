@@ -1,0 +1,49 @@
+{
+    "description": "Simple demonstration module configuration. Customize the greeting message and display options.",
+    "fields": [
+        {
+            "name": "greeting_message",
+            "label": "Greeting Message",
+            "type": "text",
+            "placeholder": "Hello, World!",
+            "help": "The message displayed by this module.",
+            "default": "Hello from the Hello World module!",
+            "required": true
+        },
+        {
+            "name": "greeting_color",
+            "label": "Greeting Color",
+            "type": "color",
+            "placeholder": "#667eea",
+            "help": "The color used for the greeting text.",
+            "default": "#667eea"
+        },
+        {
+            "name": "show_timestamp",
+            "label": "Show Timestamp",
+            "type": "checkbox",
+            "checkbox_label": "Display current date and time with greeting",
+            "help": "Shows when the module was loaded.",
+            "default": true
+        },
+        {
+            "name": "position",
+            "label": "Display Position",
+            "type": "select",
+            "options": {
+                "top": "Top of Page",
+                "bottom": "Bottom of Page",
+                "hidden": "Hidden (Debug Mode)"
+            },
+            "help": "Where to display the greeting message.",
+            "default": "top"
+        },
+        {
+            "name": "custom_css",
+            "label": "Custom CSS",
+            "type": "textarea",
+            "placeholder": ".hello-world { font-size: 20px; }",
+            "help": "Add custom CSS styles for the greeting."
+        }
+    ]
+}

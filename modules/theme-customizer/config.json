@@ -1,0 +1,124 @@
+{
+    "description": "Customize your website's appearance with colors, fonts, and layout options. All changes are applied site-wide.",
+    "fields": [
+        {
+            "name": "primary_color",
+            "label": "Primary Color",
+            "type": "color",
+            "placeholder": "#667eea",
+            "help": "Main brand color used for buttons, links, and accents",
+            "default": "#667eea"
+        },
+        {
+            "name": "secondary_color",
+            "label": "Secondary Color",
+            "type": "color",
+            "placeholder": "#764ba2",
+            "help": "Secondary color for gradients and highlights",
+            "default": "#764ba2"
+        },
+        {
+            "name": "text_color",
+            "label": "Text Color",
+            "type": "color",
+            "placeholder": "#333333",
+            "help": "Default text color for body content",
+            "default": "#333333"
+        },
+        {
+            "name": "background_color",
+            "label": "Background Color",
+            "type": "color",
+            "placeholder": "#ffffff",
+            "help": "Main background color for your site",
+            "default": "#ffffff"
+        },
+        {
+            "name": "font_family",
+            "label": "Font Family",
+            "type": "select",
+            "options": {
+                "system": "System Default",
+                "roboto": "Roboto",
+                "open-sans": "Open Sans",
+                "lato": "Lato",
+                "montserrat": "Montserrat",
+                "poppins": "Poppins"
+            },
+            "help": "Choose the font for your website",
+            "default": "system"
+        },
+        {
+            "name": "font_size",
+            "label": "Base Font Size (px)",
+            "type": "number",
+            "placeholder": "16",
+            "help": "Base font size in pixels (recommended: 14-18)",
+            "default": "16"
+        },
+        {
+            "name": "container_width",
+            "label": "Content Container Width",
+            "type": "select",
+            "options": {
+                "1140": "Standard (1140px)",
+                "1200": "Wide (1200px)",
+                "1320": "Extra Wide (1320px)",
+                "100%": "Full Width"
+            },
+            "help": "Maximum width of content containers",
+            "default": "1140"
+        },
+        {
+            "name": "border_radius",
+            "label": "Border Radius (px)",
+            "type": "number",
+            "placeholder": "8",
+            "help": "Roundness of corners for buttons and cards (0 = square)",
+            "default": "8"
+        },
+        {
+            "name": "enable_shadows",
+            "label": "Box Shadows",
+            "type": "checkbox",
+            "checkbox_label": "Enable shadow effects on cards and buttons",
+            "help": "Adds depth with subtle shadow effects",
+            "default": true
+        },
+        {
+            "name": "enable_animations",
+            "label": "Animations",
+            "type": "checkbox",
+            "checkbox_label": "Enable smooth transitions and animations",
+            "help": "Adds smooth hover effects and transitions",
+            "default": true
+        },
+        {
+            "name": "header_style",
+            "label": "Header Style",
+            "type": "select",
+            "options": {
+                "classic": "Classic (Solid)",
+                "transparent": "Transparent",
+                "gradient": "Gradient",
+                "minimal": "Minimal"
+            },
+            "help": "Choose your header design style",
+            "default": "classic"
+        },
+        {
+            "name": "custom_css",
+            "label": "Custom CSS",
+            "type": "textarea",
+            "placeholder": "/* Add your custom CSS here */\n.my-class { color: red; }",
+            "help": "Add any custom CSS code to further customize your theme"
+        },
+        {
+            "name": "google_fonts_url",
+            "label": "Google Fonts URL (Optional)",
+            "type": "url",
+            "placeholder": "https://fonts.googleapis.com/css2?family=...",
+            "help": "Load custom fonts from Google Fonts"
+        }
+    ]
+}

@@ -1,0 +1,475 @@
+/**
+ * Inline Editor Styles
+ * Beautiful, modern styles for the inline editing system
+ */
+
+/* Edit Mode Toggle Button */
+#inline-edit-toggle {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    z-index: 9999;
+    font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+}
+
+.edit-toggle-btn {
+    background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.28);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.edit-toggle-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.32);
+}
+
+.edit-toggle-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Edit Panel */
+.edit-panel {
+    position: absolute;
+    bottom: 64px;
+    right: 0;
+    width: 340px;
+    background: rgba(255, 255, 255, 0.86);
+    border-radius: 16px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.2);
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    backdrop-filter: blur(16px);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.edit-panel-header {
+    background: linear-gradient(135deg, #111827 0%, #0f172a 100%);
+    color: #f8fafc;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.edit-panel-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#close-panel-btn {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #f8fafc;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#close-panel-btn:hover {
+    background: rgba(255, 255, 255, 0.24);
+    transform: rotate(6deg);
+}
+
+.edit-panel-content {
+    padding: 20px;
+}
+
+.edit-status {
+    font-size: 13px;
+    margin-bottom: 15px;
+    padding: 10px 12px;
+    background: rgba(15, 23, 42, 0.06);
+    border-radius: 10px;
+    color: #1f2937;
+}
+
+.edit-panel hr {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 15px 0;
+}
+
+#edit-instructions {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+#edit-instructions p {
+    margin: 0 0 10px 0;
+}
+
+#edit-instructions ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+#edit-instructions li {
+    margin-bottom: 5px;
+}
+
+#changes-count {
+    font-size: 13px;
+    padding: 10px 12px;
+    background: rgba(15, 118, 110, 0.12);
+    border-radius: 10px;
+    margin-top: 10px;
+    color: #0f766e;
+}
+
+/* Panel Buttons */
+.btn-primary, .btn-secondary, .btn-toggle {
+    width: 100%;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #22d3ee 100%);
+    color: white;
+    box-shadow: 0 10px 20px rgba(14, 165, 233, 0.25);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #0f172a;
+    color: white;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-1px);
+}
+
+.btn-toggle {
+    background: linear-gradient(135deg, #ff6b4a 0%, #ff8f6a 100%);
+    color: white;
+    margin-bottom: 0;
+    box-shadow: 0 10px 20px rgba(255, 107, 74, 0.25);
+}
+
+.btn-toggle:hover {
+    transform: translateY(-1px);
+}
+
+.btn-toggle.active {
+    background: linear-gradient(135deg, #111827 0%, #0f172a 100%);
+}
+
+/* Editable Elements Highlighting */
+[data-editable].editable-highlight {
+    outline: 2px dashed rgba(15, 23, 42, 0.2);
+    outline-offset: 4px;
+    cursor: pointer;
+    transition: outline 0.2s;
+    position: relative;
+    min-height: 20px;
+}
+
+[data-editable].editable-highlight:hover {
+    outline: 2px dashed rgba(255, 107, 74, 0.6);
+    outline-offset: 4px;
+    background: rgba(255, 107, 74, 0.08);
+}
+
+/* Cards with editable content */
+.card [data-editable].editable-highlight,
+.box [data-editable].editable-highlight {
+    outline-offset: 2px; /* Tighter outline for card elements */
+}
+
+.btn[data-editable].editable-highlight {
+    outline-offset: -2px; /* Inside outline for buttons */
+}
+
+[data-editable].editing {
+    outline: 2px solid #ff6b4a;
+    outline-offset: 4px;
+    background: rgba(255, 107, 74, 0.08);
+    padding: 10px;
+    border-radius: 8px;
+    min-height: 40px;
+}
+
+[data-editable].edited {
+    outline: 2px solid #0ea5e9;
+    outline-offset: 4px;
+    background: rgba(14, 165, 233, 0.08);
+}
+
+[data-editable-container].editable-container-highlight {
+    outline: 2px dotted rgba(14, 165, 233, 0.4);
+    outline-offset: 4px;
+    min-height: 50px;
+    position: relative;
+}
+
+[data-editable-container].editable-container-highlight:hover {
+    outline: 2px dotted rgba(14, 165, 233, 0.7);
+    background: rgba(14, 165, 233, 0.08);
+}
+
+/* Edit Toolbar */
+.edit-toolbar {
+    background: #ffffff;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.edit-toolbar-buttons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.toolbar-btn {
+    background: #f8fafc;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    color: #0f172a;
+}
+
+.toolbar-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
+}
+
+.toolbar-btn:active {
+    transform: scale(0.95);
+}
+
+.toolbar-btn-save {
+    background: linear-gradient(135deg, #0ea5e9 0%, #22d3ee 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.toolbar-btn-save:hover {
+    transform: translateY(-1px);
+}
+
+.toolbar-btn-cancel {
+    background: #0f172a;
+    color: white;
+    border-color: transparent;
+}
+
+.toolbar-btn-cancel:hover {
+    transform: translateY(-1px);
+}
+
+.toolbar-separator {
+    color: #d1d5db;
+    padding: 0 4px;
+}
+
+/* Notifications */
+.inline-edit-notification {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.18);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+    max-width: 320px;
+}
+
+.inline-edit-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.notification-success {
+    background: #0f172a;
+    color: #f8fafc;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.2);
+}
+
+.notification-error {
+    background: #111827;
+    color: white;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.notification-info {
+    background: #0f172a;
+    color: white;
+    border: 1px solid rgba(14, 165, 233, 0.4);
+}
+
+.notification-success::after {
+    content: "Saved";
+    margin-left: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+/* New Editable Element */
+.new-editable-element {
+    padding: 15px;
+    margin: 10px 0;
+    border: 2px dashed rgba(255, 107, 74, 0.6);
+    border-radius: 10px;
+    background: rgba(255, 107, 74, 0.08);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Edit Mode Body Class */
+body.inline-edit-mode {
+    padding-bottom: 100px; /* Space for edit panel */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #inline-edit-toggle {
+        bottom: 10px;
+        right: 10px;
+    }
+    
+    .edit-panel {
+        width: 280px;
+    }
+    
+    .edit-toggle-btn span {
+        display: none;
+    }
+    
+    .edit-toggle-btn {
+        padding: 12px;
+        border-radius: 50%;
+    }
+}
+
+/* Make contenteditable elements look better */
+[contenteditable="true"]:focus {
+    outline: none;
+}
+
+[contenteditable="true"] {
+    min-height: 1em;
+}
+
+/* Enhance visual feedback */
+.editable-highlight::after {
+    content: '✎';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #0f172a;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.editable-highlight:hover::after {
+    opacity: 1;
+}
+
+/* Loading state */
+.saving-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 23, 42, 0.92);
+    color: #f8fafc;
+    padding: 20px 30px;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.4);
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.saving-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(248, 250, 252, 0.3);
+    border-top-color: #22d3ee;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
