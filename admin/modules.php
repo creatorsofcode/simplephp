@@ -43,8 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !simplephp_csrf_valid()) {
 
         if ($action === 'upload_zip' && isset($_FILES['module_zip'])) {
                 $file = $_FILES['module_zip'];
+                $maxUploadBytes = 5 * 1024 * 1024; // 5MB - modules are small PHP/JSON packages
                 if ($file['error'] !== UPLOAD_ERR_OK) {
                         $error = 'Upload failed. Please try again.';
+                } elseif ($file['size'] > $maxUploadBytes) {
+                        $error = 'Module ZIP is too large (max 5MB).';
                 } else {
                         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                         if ($ext !== 'zip') {

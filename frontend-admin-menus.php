@@ -39,7 +39,10 @@ try {
             if (empty($id) || empty($label)) {
                 throw new Exception('ID and label are required');
             }
-            
+            if (strlen($id) > 100 || strlen($label) > 100 || strlen($url) > 2000) {
+                throw new Exception('ID/label max 100 characters, URL max 2000 characters');
+            }
+
             // Check if ID already exists
             foreach ($data['menu'] as $item) {
                 if ($item['id'] === $id) {
@@ -83,7 +86,10 @@ try {
             if (empty($id)) {
                 throw new Exception('ID is required');
             }
-            
+            if (strlen($label) > 100 || strlen($url) > 2000) {
+                throw new Exception('Label max 100 characters, URL max 2000 characters');
+            }
+
             $found = false;
             simplephp_json_update($contentFile, function ($d) use ($id, $label, $type, $url, &$found) {
                 foreach ($d['menu'] as &$item) {

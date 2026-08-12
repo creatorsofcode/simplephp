@@ -34,18 +34,20 @@ $contactPage = $data['pages']['contact'] ?? [];
 $recipientEmail = $contactPage['email'] ?? $siteData['email'] ?? 'info@simplephp.org';
 
 $errors = [];
-$name = trim($_POST['name'] ?? '');
-$email = trim($_POST['email'] ?? '');
-$message = trim($_POST['message'] ?? '');
+$name = trim((string) ($_POST['name'] ?? ''));
+$email = trim((string) ($_POST['email'] ?? ''));
+$message = trim((string) ($_POST['message'] ?? ''));
 
-// Validation
+// Validation (reject-with-feedback, not silent truncation)
 if(empty($name)){
     $errors['name'] = 'Name is required';
+} elseif(strlen($name) > 200){
+    $errors['name'] = 'Name is too long (max 200 characters)';
 }
 
 if(empty($email)){
     $errors['email'] = 'Email is required';
-} elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+} elseif(strlen($email) > 254 || !filter_var($email, FILTER_VALIDATE_EMAIL)){ // 254 = max valid email length per RFC 5321
     $errors['email'] = 'Please enter a valid email address';
 }
 
@@ -53,6 +55,8 @@ if(empty($message)){
     $errors['message'] = 'Message is required';
 } elseif(strlen($message) < 10){
     $errors['message'] = 'Message must be at least 10 characters long';
+} elseif(strlen($message) > 5000){
+    $errors['message'] = 'Message is too long (max 5000 characters)';
 }
 
 // If there are errors, return them

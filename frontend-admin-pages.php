@@ -37,7 +37,10 @@ try {
             if (empty($id) || empty($title)) {
                 throw new Exception('Page ID and title are required');
             }
-            
+            if (strlen($id) > 100 || strlen($title) > 200) {
+                throw new Exception('Page ID max 100 characters, title max 200 characters');
+            }
+
             // Check if page already exists
             if (isset($data['pages'][$id])) {
                 throw new Exception('Page with this ID already exists');

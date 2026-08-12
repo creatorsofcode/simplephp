@@ -20,6 +20,18 @@ declare(strict_types=1);
 
 error_reporting(E_ALL);
 
+// CLI-only. This script overwrites content.json and several core PHP/JS
+// files from stored snapshots with no further checks - it must never be
+// reachable over HTTP, where it would be an unauthenticated destructive
+// content-reset/defacement endpoint. The documented use case is a cron
+// job invoking `php reset-content.php` directly, which is unaffected by
+// this restriction.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    header('Content-Type: text/plain; charset=utf-8');
+    exit("Forbidden: this script may only be run from the command line.\n");
+}
+
 require_once __DIR__ . '/includes/paths.php';
 
 $baseDir      = __DIR__ . DIRECTORY_SEPARATOR;

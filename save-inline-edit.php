@@ -18,8 +18,18 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 simplephp_require_csrf_json();
 
-// Get JSON input
-$input = file_get_contents('php://input');
+// Get JSON input (capped - the whole site's content.json is small; this is
+// generous headroom while still bounding memory use from a malformed/huge request)
+$maxBytes = 2 * 1024 * 1024; // 2MB
+$input = file_get_contents('php://input', false, null, 0, $maxBytes + 1);
+
+if ($input === false || strlen($input) > $maxBytes) {
+    http_response_code(413);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'Request body too large']);
+    exit;
+}
+
 $data = json_decode($input, true);
 
 if (!$data) {

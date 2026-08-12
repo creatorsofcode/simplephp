@@ -7,6 +7,13 @@
 
 declare(strict_types=1);
 
+// Never let a PHP warning/notice/fatal leak file paths, source snippets,
+// or other internals into a response body. Errors are still logged
+// server-side (log_errors stays whatever php.ini/the SAPI already has it
+// as - we only ever turn display OFF here, never touch logging).
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+
 require_once __DIR__ . '/paths.php';
 
 /* ----------------------------------------------------------------------

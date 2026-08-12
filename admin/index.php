@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = $_POST['username'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        if (!empty($username) && !empty($password) && strlen($username) >= 3 && strlen($password) >= 5) {
+        if (!empty($username) && !empty($password) && strlen($username) >= 3 && strlen($username) <= 60 && strlen($password) >= 5 && strlen($password) <= 512) {
             if (!isset($users[$username])) {
                 $hash = password_hash($password, PASSWORD_DEFAULT);
                 $users = simplephp_json_update($usersFile, function ($data) use ($username, $hash) {
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = "User '$username' already exists.";
             }
         } else {
-            $error = 'Username must be at least 3 characters, password at least 5 characters.';
+            $error = 'Username must be 3-60 characters, password 5-512 characters.';
         }
     }
 
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = $_POST['username'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        if (!empty($password) && strlen($password) >= 5 && isset($users[$username])) {
+        if (!empty($password) && strlen($password) >= 5 && strlen($password) <= 512 && isset($users[$username])) {
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $users = simplephp_json_update($usersFile, function ($data) use ($username, $hash) {
                 $data[$username] = $hash;
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }, []);
             $message = "Password for '$username' updated.";
         } else {
-            $error = 'Password must be at least 5 characters.';
+            $error = 'Password must be 5-512 characters.';
         }
     }
 
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $menuOrder = (int)($_POST['menu_order'] ?? 1);
         $menuUrl = $_POST['menu_url'] ?? '';
 
-        if (!empty($menuId) && !empty($menuLabel)) {
+        if (!empty($menuId) && !empty($menuLabel) && strlen($menuLabel) <= 100 && strlen($menuUrl) <= 2000) {
             $found = false;
             $content = simplephp_json_update($contentFile, function ($data) use ($menuId, $menuLabel, $menuType, $menuOrder, $menuUrl, &$found) {
                 foreach ($data['menu'] ?? [] as &$item) {
@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Menu item not found.';
             }
         } else {
-            $error = 'Menu ID and label are required.';
+            $error = 'Menu ID and label are required (label max 100 characters, URL max 2000 characters).';
         }
     }
     } catch (RuntimeException $e) {

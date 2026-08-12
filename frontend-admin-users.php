@@ -37,11 +37,15 @@ try {
             if (empty($username) || empty($password)) {
                 throw new Exception('Username and password are required');
             }
-            
-            if (strlen($password) < 6) {
-                throw new Exception('Password must be at least 6 characters');
+
+            if (strlen($username) > 60) {
+                throw new Exception('Username must be 60 characters or fewer');
             }
-            
+
+            if (strlen($password) < 6 || strlen($password) > 512) {
+                throw new Exception('Password must be 6-512 characters');
+            }
+
             if (isset($users[$username])) {
                 throw new Exception('Username already exists');
             }
@@ -89,10 +93,10 @@ try {
                 throw new Exception('Username and new password are required');
             }
             
-            if (strlen($newPassword) < 6) {
-                throw new Exception('Password must be at least 6 characters');
+            if (strlen($newPassword) < 6 || strlen($newPassword) > 512) {
+                throw new Exception('Password must be 6-512 characters');
             }
-            
+
             if (!isset($users[$username])) {
                 throw new Exception('User not found');
             }
